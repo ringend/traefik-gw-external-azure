@@ -1,0 +1,142 @@
+http:
+  serversTransports:
+    k3s-internal-traefik:
+      insecureSkipVerify: true
+  middlewares:
+    global-https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    monitor-ext-https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    llm-ext-p8130-strip-prefix:
+      stripPrefix:
+        prefixes:
+          - /000-555-000-llm-p8130-ringen-cloud-d001
+    traefik-health-rewrite:
+      replacePath:
+        path: /ping
+        
+  routers:
+    web-catchall-https-redirect-router:
+      rule: "HostRegexp(`{host:.+}`)"
+      entryPoints:
+        - web
+      middlewares:
+        - global-https-redirect
+      service: noop@internal
+      priority: 1
+
+    traefik-health-http-router:
+      rule: "Path(`/healthz`)"
+      entryPoints:
+        - web
+      middlewares:
+        - traefik-health-rewrite
+      service: ping@internal
+      priority: 1000
+
+    traefik-health-https-router:
+      rule: "Path(`/healthz`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - traefik-health-rewrite
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: ping@internal
+      priority: 1000
+
+    monitor-ext-http-router:
+      rule: "Host(`monitor-ext.ringen.cloud`)"
+      entryPoints:
+        - web
+      middlewares:
+        - monitor-ext-https-redirect
+      service: noop@internal
+
+    monitor-ext-router:
+      rule: "Host(`monitor-ext.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
+    grafana-router:
+      rule: "Host(`grafana.ringen.cloud`) || Host(`monitoring.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
+    godswill-ai-router:
+      rule: "Host(`ai-external.godswill.page`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "godswill.page"
+            sans:
+              - "*.godswill.page"
+      service: k3s-internal-traefik-service
+
+    llm-ext-p8130-router:
+      rule: "Host(`llm-ext.ringen.cloud`) && PathPrefix(`/000-555-000-llm-p8130-ringen-cloud-d001`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - llm-ext-p8130-strip-prefix
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: llm-p8130-service
+      priority: 110
+
+  services:
+    k3s-internal-traefik-service:
+      loadBalancer:
+        serversTransport: k3s-internal-traefik
+        servers:
+          - url: "https://traefik-k3s-int.ringen.cloud:9443"
+        passHostHeader: true
+    llm-p8130-service:
+      loadBalancer:
+        servers:
+          - url: "http://duke.wg.ringen.cloud:8130"
+
+tcp:
+  routers:
+    kubeapi-router:
+      rule: "HostSNI(`kubectl.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      service: kubeapi-service
+      tls:
+        passthrough: true
+  services:
+    kubeapi-service:
+      loadBalancer:
+        servers:
+          - address: "bee1.wg.ringen.cloud:6443"
+
+

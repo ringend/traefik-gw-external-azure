@@ -1,0 +1,19 @@
+[Unit]
+Description=Traefik Gateway External (Docker -traefik-gateway-external)
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+
+# Start the already-created container
+ExecStart=/usr/bin/docker start -a traefik-gateway-external
+
+# Stop the container cleanly
+ExecStop=/usr/bin/docker stop traefik-gateway-external
+
+[Install]
+WantedBy=multi-user.target

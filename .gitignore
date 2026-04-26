@@ -1,0 +1,11 @@
+# Runtime and generated state
+data/
+config/.nfs*
+PLAN.md
+
+# Local-only credentials and certificate material
+config/dns-key.file
+config/k3s-api-token.file
+config/k3s-ca.crt
+config/k3s-kubeconfig
+config-backup/acme.json
