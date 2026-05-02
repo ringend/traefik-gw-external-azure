@@ -111,6 +111,17 @@ http:
               - "*.ringen.cloud"
       service: llm-p8130-service
       priority: 110
+    whisper-stt-router:
+      rule: "Host(`stt-ext.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
 
   services:
     k3s-internal-traefik-service:
@@ -138,5 +149,4 @@ tcp:
       loadBalancer:
         servers:
           - address: "bee1.wg.ringen.cloud:6443"
-
 
