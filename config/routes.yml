@@ -73,8 +73,8 @@ http:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
 
-    grafana-router:
-      rule: "Host(`grafana.ringen.cloud`) || Host(`monitoring.ringen.cloud`)"
+    oauth-ext-router:
+      rule: "Host(`oauth.ringen.cloud`) || Host(`oauth-ext.ringen.cloud`)"
       entryPoints:
         - websecure
       tls:
@@ -111,7 +111,8 @@ http:
               - "*.ringen.cloud"
       service: llm-p8130-service
       priority: 110
-    whisper-stt-router:
+      
+    stt-ext-router:
       rule: "Host(`stt-ext.ringen.cloud`)"
       entryPoints:
         - websecure
