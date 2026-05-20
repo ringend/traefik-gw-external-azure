@@ -54,7 +54,7 @@ http:
       priority: 1000
 
     monitor-ext-http-router:
-      rule: "Host(`monitor-ext.ringen.cloud`)"
+      rule: "Host(`monitor.ringen.cloud`)"
       entryPoints:
         - web
       middlewares:
@@ -62,7 +62,7 @@ http:
       service: noop@internal
 
     monitor-ext-router:
-      rule: "Host(`monitor-ext.ringen.cloud`)"
+      rule: "Host(`monitor.ringen.cloud`)"
       entryPoints:
         - websecure
       tls:
@@ -75,6 +75,30 @@ http:
 
     oauth-ext-router:
       rule: "Host(`oauth.ringen.cloud`) || Host(`oauth-ext.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
+    hermes-router:
+      rule: "Host(`hermes.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
+    k3s-router:
+      rule: "Host(`k3s.ringen.cloud`)"
       entryPoints:
         - websecure
       tls:
@@ -150,4 +174,3 @@ tcp:
       loadBalancer:
         servers:
           - address: "bee1.wg.ringen.cloud:6443"
-

@@ -82,4 +82,4 @@ Option 2:
 
 Current Route
 -------------
-- `monitor-ext.ringen.cloud` -> proxies to `https://monitoring.ringen.cloud`
+- `monitor.ringen.cloud` -> proxies to `https://monitoring.ringen.cloud`
