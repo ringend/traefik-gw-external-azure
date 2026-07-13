@@ -13,7 +13,7 @@ read -r -p " Press <Enter> to continue..... " _
 CONTAINER_NAME="traefik-gateway-external"
 TRAEFIK_IMAGE="traefik:v3.6"
 
-BASE_DIR="/nas-sync/traefik-gw-external-azeus2"
+BASE_DIR="/nas-sync/traefik-gw-external-azure"
 CONFIG_DIR="${BASE_DIR}/config"
 CONFIG_BACKUP_DIR="${BASE_DIR}/config-backup"
 ACME_HOST_DIR="/opt/docker-traefik-gateway-external"

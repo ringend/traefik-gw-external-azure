@@ -147,7 +147,6 @@ http:
             sans:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
-
   services:
     k3s-internal-traefik-service:
       loadBalancer:

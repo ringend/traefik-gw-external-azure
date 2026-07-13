@@ -1,12 +1,13 @@
 # traefik external gateway backup repo
 
-This folder is intended to be pushed to `ringend/traefik-gw-external-azeus2` as a backup of non-secret Traefik configuration and scripts.
+This folder is intended to be pushed to `ringend/traefik-gw-external-azure` as a backup of non-secret Traefik configuration and scripts.
 
 The live local gateway folder remains the source of truth. GitHub is only the backup copy of files that are safe to store there.
 
 ## What belongs in the repo
 
 - `docker-start.sh`
+- `docker-set-log-config.sh`
 - `traefik-gateway-external.service`
 - `README.txt`
 - `config/traefik.yml`
@@ -29,7 +30,7 @@ If another file later gains tokens, certificates, kubeconfig data, ACME account 
 
 ## GitHub setup
 
-Assume `ringend/traefik-gw-external-azeus2` already exists on GitHub.
+Assume `ringend/traefik-gw-external-azure` already exists on GitHub.
 
 Here, `origin` means the GitHub repository URL, not another local folder.
 
@@ -38,13 +39,13 @@ If this local folder is not connected to that GitHub repo yet:
 ```powershell
 git init
 git branch -M main
-git remote add origin https://github.com/ringend/traefik-gw-external-azeus2.git
+git remote add origin https://github.com/ringend/traefik-gw-external-azure.git
 ```
 
 If `origin` already exists locally, update it instead:
 
 ```powershell
-git remote set-url origin https://github.com/ringend/traefik-gw-external-azeus2.git
+git remote set-url origin https://github.com/ringend/traefik-gw-external-azure.git
 ```
 
 ## First push
