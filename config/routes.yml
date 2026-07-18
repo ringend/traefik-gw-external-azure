@@ -18,6 +18,18 @@ http:
     traefik-health-rewrite:
       replacePath:
         path: /ping
+    ai-brain-mcp-rate-limit:
+      rateLimit:
+        average: 10
+        burst: 20
+        period: 1s
+    ai-brain-mcp-buffering:
+      buffering:
+        maxRequestBodyBytes: 1048576
+        memRequestBodyBytes: 262144
+    ai-brain-mcp-inflight:
+      inFlightReq:
+        amount: 20
         
   routers:
     web-catchall-https-redirect-router:
@@ -147,6 +159,36 @@ http:
             sans:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
+
+    ai-brain-mcp-ext-router:
+      rule: "Host(`ai-brain-mcp-ext.ringen.cloud`) && PathPrefix(`/mcp`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - ai-brain-mcp-rate-limit
+        - ai-brain-mcp-buffering
+        - ai-brain-mcp-inflight
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+      priority: 120
+
+    ai-brain-health-ext-router:
+      rule: "Host(`ai-brain-mcp-ext.ringen.cloud`) && Path(`/healthz`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+      priority: 1100
   services:
     k3s-internal-traefik-service:
       loadBalancer:
