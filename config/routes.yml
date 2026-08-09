@@ -145,6 +145,18 @@ http:
               - "*.godswill.page"
       service: k3s-internal-traefik-service
 
+    ai-gw01-router:
+      rule: "Host(`ai-gw01.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
     llm-ext-p8130-router:
       rule: "Host(`llm-ext.ringen.cloud`) && PathPrefix(`/000-555-000-llm-p8130-ringen-cloud-d001`)"
       entryPoints:
