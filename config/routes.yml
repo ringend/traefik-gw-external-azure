@@ -133,6 +133,19 @@ http:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
 
+
+    brain-web-router:
+      rule: "Host(`brain-web.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
     godswill-ai-router:
       rule: "Host(`ai-external.godswill.page`)"
       entryPoints:
