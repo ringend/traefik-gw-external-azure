@@ -30,7 +30,7 @@ http:
     ai-brain-mcp-inflight:
       inFlightReq:
         amount: 20
-        
+
   routers:
     web-catchall-https-redirect-router:
       rule: "HostRegexp(`{host:.+}`)"
@@ -133,7 +133,6 @@ http:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
 
-
     brain-web-router:
       rule: "Host(`brain-web.ringen.cloud`)"
       entryPoints:
@@ -184,7 +183,7 @@ http:
               - "*.ringen.cloud"
       service: llm-p8130-service
       priority: 110
-      
+
     stt-ext-router:
       rule: "Host(`stt-ext.ringen.cloud`)"
       entryPoints:
@@ -226,6 +225,7 @@ http:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
       priority: 1100
+
   services:
     k3s-internal-traefik-service:
       loadBalancer:
