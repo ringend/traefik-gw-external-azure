@@ -109,6 +109,18 @@ http:
               - "*.ringen.cloud"
       service: k3s-internal-traefik-service
 
+    hermes-server-web-router:
+      rule: "Host(`hermes-server-web.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: k3s-internal-traefik-service
+
     k3s-router:
       rule: "Host(`k3s.ringen.cloud`)"
       entryPoints:
