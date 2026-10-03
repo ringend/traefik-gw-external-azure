@@ -6,12 +6,17 @@ set -euo pipefail
 # - Docker daemon IPv6 enabled (daemon.json)
 # - Cloudflare DNS API token in dns-key.file
 
-echo ' Must be run via "sudo"'
-read -r -p " Press <Enter> to continue..... " _
+if [[ -t 0 ]]; then
+  echo ' Must be run via "sudo"'
+  read -r -p " Press <Enter> to continue..... " _
+else
+  echo "Starting non-interactively under service control."
+fi
 
 
 CONTAINER_NAME="traefik-gateway-external"
-TRAEFIK_IMAGE="traefik:v3.6"
+TRAEFIK_IMAGE="traefik:v3.7.13@sha256:3429c14149401de2ac82fc72ddc6a92642332b90deb3012301ff211b9d2d0f18"
+WAF_NETWORK_NAME="traefik-waf"
 
 BASE_DIR="/nas-sync/traefik-gw-external-azure"
 CONFIG_DIR="${BASE_DIR}/config"
@@ -85,6 +90,11 @@ if [ ! -f "${DNS_KEY_FILE}" ] || [ ! -r "${DNS_KEY_FILE}" ]; then
   exit 1
 fi
 
+if ! docker network inspect "${WAF_NETWORK_NAME}" >/dev/null 2>&1; then
+  echo "Creating private WAF network: ${WAF_NETWORK_NAME}"
+  docker network create --driver bridge --ipv6 "${WAF_NETWORK_NAME}" >/dev/null
+fi
+
 ######################################################################
 # Stop and remove existing container (if present) so recreate is clean.
 if docker ps -a --format '{{.Names}}' | grep -Fxq "${CONTAINER_NAME}"; then
@@ -101,6 +111,7 @@ fi
 # Create container (bridge networking, CF token via file mount)
 docker run -d \
   --name "${CONTAINER_NAME}" \
+  --network "${WAF_NETWORK_NAME}" \
   -p 80:80 \
   -p 443:443 \
   -e CF_DNS_API_TOKEN_FILE=/run/secrets/dns-key \

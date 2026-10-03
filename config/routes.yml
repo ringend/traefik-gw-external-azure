@@ -86,7 +86,7 @@ http:
       service: k3s-internal-traefik-service
 
     oauth-ext-router:
-      rule: "Host(`oauth.ringen.cloud`) || Host(`oauth-ext.ringen.cloud`)"
+      rule: "Host(`oauth-ext.ringen.cloud`)"
       entryPoints:
         - websecure
       tls:
@@ -95,7 +95,19 @@ http:
           - main: "ringen.cloud"
             sans:
               - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
+      service: modsecurity-waf-service
+
+    oauth-waf-router:
+      rule: "Host(`oauth.ringen.cloud`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.cloud"
+            sans:
+              - "*.ringen.cloud"
+      service: modsecurity-waf-service
 
     hermes-router:
       rule: "Host(`hermes.ringen.cloud`)"
@@ -107,7 +119,7 @@ http:
           - main: "ringen.cloud"
             sans:
               - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
+      service: modsecurity-waf-service
 
     hermes-server-web-router:
       rule: "Host(`hermes-server-web.ringen.cloud`)"
@@ -155,7 +167,7 @@ http:
           - main: "ringen.cloud"
             sans:
               - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
+      service: modsecurity-waf-service
 
     godswill-ai-router:
       rule: "Host(`ai-external.godswill.page`)"
@@ -179,7 +191,7 @@ http:
           - main: "ringen.cloud"
             sans:
               - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
+      service: modsecurity-waf-service
 
     llm-ext-p8130-router:
       rule: "Host(`llm-ext.ringen.cloud`) && PathPrefix(`/000-555-000-llm-p8130-ringen-cloud-d001`)"
@@ -206,7 +218,7 @@ http:
           - main: "ringen.cloud"
             sans:
               - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
+      service: modsecurity-waf-service
 
     ai-brain-mcp-ext-router:
       rule: "Host(`ai-brain-mcp-ext.ringen.cloud`) && PathPrefix(`/mcp`)"
@@ -244,6 +256,11 @@ http:
         serversTransport: k3s-internal-traefik
         servers:
           - url: "https://traefik-k3s-int.ringen.cloud:9443"
+        passHostHeader: true
+    modsecurity-waf-service:
+      loadBalancer:
+        servers:
+          - url: "http://modsecurity-waf-external:8080"
         passHostHeader: true
     llm-p8130-service:
       loadBalancer:

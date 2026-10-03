@@ -9,11 +9,16 @@ Type=simple
 Restart=always
 RestartSec=5
 
-# Start the already-created container
-ExecStart=/usr/bin/docker start -a traefik-gateway-external
+# Reconcile and verify the private WAF container before accepting public traffic.
+ExecStartPre=/usr/bin/bash /nas-sync/waf-external-azure/docker-start.sh
 
-# Stop the container cleanly
+# Recreate Traefik with the pinned image and current mounts, then attach logs.
+ExecStartPre=/usr/bin/bash /nas-sync/traefik-gw-external-azure/docker-start.sh
+ExecStart=/usr/bin/docker logs -f traefik-gateway-external
+
+# Stop the public gateway before its private WAF dependency.
 ExecStop=/usr/bin/docker stop traefik-gateway-external
+ExecStop=-/usr/bin/docker stop modsecurity-waf-external
 
 [Install]
 WantedBy=multi-user.target
