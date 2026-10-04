@@ -41,6 +41,19 @@ http:
       service: noop@internal
       priority: 1
 
+    cookbook-waf-router:
+      rule: "Host(`cookbook-ext.ringen.page`)"
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: cloudflare
+        domains:
+          - main: "ringen.page"
+            sans:
+              - "*.ringen.page"
+      service: modsecurity-waf-external-ingress-service
+      priority: 1000
+
     traefik-health-http-router:
       rule: "Path(`/healthz`)"
       entryPoints:
@@ -261,6 +274,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://modsecurity-waf-external:8080"
+        passHostHeader: true
+    modsecurity-waf-external-ingress-service:
+      loadBalancer:
+        servers:
+          - url: "http://modsecurity-waf-external-ingress:8080"
         passHostHeader: true
     llm-p8130-service:
       loadBalancer:
