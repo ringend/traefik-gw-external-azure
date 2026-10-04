@@ -7,8 +7,6 @@ entryPoints:
     address: ":80"
   websecure:
     address: ":443"
-  wafreturn:
-    address: ":9444"
 
 providers:
   kubernetesIngress:

@@ -11,7 +11,8 @@ RestartSec=5
 
 # Reconcile and verify the private WAF container before accepting public traffic.
 ExecStartPre=/usr/bin/bash /nas-sync/waf-external-azure/docker-start.sh
-ExecStartPre=/usr/bin/bash /nas-sync/waf-external-azure/external-ingress-waf-start.sh
+# Cookbook now returns through internal k3s Traefik, so retire the obsolete second WAF.
+ExecStartPre=-/usr/bin/docker rm -f modsecurity-waf-external-ingress
 
 # Recreate Traefik with the pinned image and current mounts, then attach logs.
 ExecStartPre=/usr/bin/bash /nas-sync/traefik-gw-external-azure/docker-start.sh
@@ -19,7 +20,6 @@ ExecStart=/usr/bin/docker logs -f traefik-gateway-external
 
 # Stop the public gateway before its private WAF dependency.
 ExecStop=/usr/bin/docker stop traefik-gateway-external
-ExecStop=-/usr/bin/docker stop modsecurity-waf-external-ingress
 ExecStop=-/usr/bin/docker stop modsecurity-waf-external
 
 [Install]

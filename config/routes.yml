@@ -51,7 +51,7 @@ http:
           - main: "ringen.page"
             sans:
               - "*.ringen.page"
-      service: modsecurity-waf-external-ingress-service
+      service: modsecurity-waf-service
       priority: 1000
 
     traefik-health-http-router:
@@ -168,7 +168,7 @@ http:
           - main: "ringen.cloud"
             sans:
               - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
+      service: modsecurity-waf-service
 
     brain-web-router:
       rule: "Host(`brain-web.ringen.cloud`)"
@@ -274,11 +274,6 @@ http:
       loadBalancer:
         servers:
           - url: "http://modsecurity-waf-external:8080"
-        passHostHeader: true
-    modsecurity-waf-external-ingress-service:
-      loadBalancer:
-        servers:
-          - url: "http://modsecurity-waf-external-ingress:8080"
         passHostHeader: true
     llm-p8130-service:
       loadBalancer:

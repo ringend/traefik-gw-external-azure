@@ -17,11 +17,6 @@ fi
 CONTAINER_NAME="traefik-gateway-external"
 TRAEFIK_IMAGE="traefik:v3.7.13@sha256:3429c14149401de2ac82fc72ddc6a92642332b90deb3012301ff211b9d2d0f18"
 WAF_NETWORK_NAME="traefik-waf"
-WAF_RETURN_NETWORK_NAME="wafreturn-external-ingress"
-WAF_RETURN_NETWORK_SUBNET="172.19.0.0/16"
-WAF_RETURN_NETWORK_IPV6_SUBNET="fd59:a22e:7327::/64"
-WAF_RETURN_TRAEFIK_IPV4="172.19.0.10"
-WAF_RETURN_TRAEFIK_IPV6="fd59:a22e:7327::10"
 
 BASE_DIR="/nas-sync/traefik-gw-external-azure"
 CONFIG_DIR="${BASE_DIR}/config"
@@ -100,24 +95,6 @@ if ! docker network inspect "${WAF_NETWORK_NAME}" >/dev/null 2>&1; then
   docker network create --driver bridge --ipv6 "${WAF_NETWORK_NAME}" >/dev/null
 fi
 
-if ! docker network inspect "${WAF_RETURN_NETWORK_NAME}" >/dev/null 2>&1; then
-  echo "Creating private WAF return network: ${WAF_RETURN_NETWORK_NAME}"
-  docker network create \
-    --driver bridge \
-    --ipv6 \
-    --subnet "${WAF_RETURN_NETWORK_SUBNET}" \
-    --gateway "172.19.0.1" \
-    --subnet "${WAF_RETURN_NETWORK_IPV6_SUBNET}" \
-    --gateway "fd59:a22e:7327::1" \
-    "${WAF_RETURN_NETWORK_NAME}" >/dev/null
-fi
-
-waf_return_network_subnets="$(docker network inspect --format '{{range .IPAM.Config}}{{.Subnet}} {{end}}' "${WAF_RETURN_NETWORK_NAME}")"
-if [[ "${waf_return_network_subnets}" != *"${WAF_RETURN_NETWORK_SUBNET}"* ]] || [[ "${waf_return_network_subnets}" != *"${WAF_RETURN_NETWORK_IPV6_SUBNET}"* ]]; then
-  echo "Return network ${WAF_RETURN_NETWORK_NAME} does not use the required dedicated subnets." >&2
-  exit 1
-fi
-
 ######################################################################
 # Stop and remove existing container (if present) so recreate is clean.
 if docker ps -a --format '{{.Names}}' | grep -Fxq "${CONTAINER_NAME}"; then
@@ -147,12 +124,6 @@ docker run -d \
   -v "${K8S_KUBECONFIG_FILE}:/etc/traefik/k3s-kubeconfig:ro" \
   -v "${ACME_FILE}:/data/acme.json" \
   "${TRAEFIK_IMAGE}"
-
-docker network connect \
-  --ip "${WAF_RETURN_TRAEFIK_IPV4}" \
-  --ip6 "${WAF_RETURN_TRAEFIK_IPV6}" \
-  "${WAF_RETURN_NETWORK_NAME}" \
-  "${CONTAINER_NAME}"
 
 #######################################################################
 # Verify container startup and health (if a HEALTHCHECK exists)
