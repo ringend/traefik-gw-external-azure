@@ -134,18 +134,6 @@ http:
               - "*.ringen.cloud"
       service: modsecurity-waf-service
 
-    hermes-server-web-router:
-      rule: "Host(`hermes-server-web.ringen.cloud`)"
-      entryPoints:
-        - websecure
-      tls:
-        certResolver: cloudflare
-        domains:
-          - main: "ringen.cloud"
-            sans:
-              - "*.ringen.cloud"
-      service: k3s-internal-traefik-service
-
     k3s-router:
       rule: "Host(`k3s.ringen.cloud`)"
       entryPoints:
@@ -192,18 +180,6 @@ http:
           - main: "godswill.page"
             sans:
               - "*.godswill.page"
-      service: k3s-internal-traefik-service
-
-    ai-gw01-router:
-      rule: "Host(`ai-gw01.ringen.cloud`)"
-      entryPoints:
-        - websecure
-      tls:
-        certResolver: cloudflare
-        domains:
-          - main: "ringen.cloud"
-            sans:
-              - "*.ringen.cloud"
       service: modsecurity-waf-service
 
     llm-ext-p8130-router:
