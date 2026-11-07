@@ -15,7 +15,7 @@ fi
 
 
 CONTAINER_NAME="traefik-gateway-external"
-TRAEFIK_IMAGE="traefik:v3.7.13@sha256:3429c14149401de2ac82fc72ddc6a92642332b90deb3012301ff211b9d2d0f18"
+TRAEFIK_IMAGE="traefik:v3.7.17@sha256:c999a937a1bb51ba36c79adf2c9db1d1bb196896b66d524d30ef4945606d565f"
 WAF_NETWORK_NAME="traefik-waf"
 
 BASE_DIR="/nas-sync/traefik-gw-external-azure"

@@ -103,3 +103,63 @@ Option 2:
 Current Route
 -------------
 - `monitor.ringen.cloud` -> proxies to `https://monitoring.ringen.cloud`
+
+
+NAS Origin Trust Boundary
+-------------------------
+The active routes file, rather than the historical route summary above, is
+authoritative. NAS was activated for controlled production acceptance on
+2026-11-02: both nas-waf-router and nas-health-waf-router now use
+modsecurity-waf-service. The deny routers remain closed on noop@internal.
+
+The HTTPS origin is nas-ext.ringen.cloud, using the existing cloudflare resolver
+and *.ringen.cloud certificate. A NAS request must have BOTH:
+- An immediate TCP peer in the current AzureFrontDoor.Backend service tag.
+  nas-frontdoor-source deliberately has no X-Forwarded-For ipStrategy.
+- X-Azure-FDID exactly 33338d0f-04c2-4699-8229-0e74374d4f34 (ai-rg/ai-fd-01).
+
+NAS HTTP is denied; HTTPS requests with the public nas.ringen.cloud origin Host
+or the wrong/missing FDID cannot reach the application. NAS guards reserve
+9223372036854774807 (maximum 64-bit user router priority). Their rules are
+disjoint and outrank generic health and Kubernetes-provider routes. Never assign
+that reserved priority to a Kubernetes route, including a TCP passthrough route,
+or create another external NAS route. Internal NAS routes must remain on
+websecureint, never external-traefik-azure or an external entrypoint.
+
+Before any activation, the coordinator must confirm standard Quantum, OIDC,
+blocking WAF, internal canonical forwarded headers, and validated upstream TLS.
+Then change ONLY the service of nas-waf-router and nas-health-waf-router to
+modsecurity-waf-service. Host preservation is already enabled on that service;
+there must be no direct k3s service shortcut. Roll back by restoring both
+NAS services to noop@internal; retain all origin guards.
+
+Front Door probe contract (Front Door and DNS are user-managed):
+- HTTPS, origin Host AND TLS SNI nas-ext.ringen.cloud, certificate checks ON.
+- HEAD /healthz (GET also supported), through the same source + FDID controls.
+- nas-health-rewrite maps to /health before the blocking WAF and internal
+  websecureint route; only a healthy app should return 200 after activation.
+- No auth bypass on application paths. The unauthenticated /health response
+  must be non-sensitive and must not redirect to OIDC or serve the SPA shell.
+- Other hosts' /healthz probes remain gateway-only ping checks.
+- When rolled back to staging, actual Front Door NAS requests return 418; untrusted direct
+  origin requests return 403, even with a spoofed FDID and forwarded address.
+
+Refresh the NAS source ranges at least weekly and before a planned deployment:
+  powershell -File .\Update-NasFrontDoorRanges.ps1
+This performs read-only Azure service-tag discovery, validates every prefix,
+and replaces only the generated NAS allowlist. It does not change Azure.
+Retain the previous list if lookup fails; review freshness operationally.
+
+On EACH gateway, trigger and verify a dynamic reload after editing shared
+NFS routes (NFS updates from another machine do not reliably trigger inotify):
+  sudo touch /nas-sync/traefik-gw-external-azure/config/routes.yml
+Wait at least 3 seconds, verify direct/spoofed NAS rejection, unchanged other-host
+health, and real Front Door NAS health. Do not equate file presence with reload.
+Use the existing systemd lifecycle only if a restart is actually needed.
+
+No new NAS buffering or aggregate file-size limit is configured here.
+The shared websecure readTimeout remains Traefik's 60s default; writeTimeout
+is unlimited. Standard Quantum chunks must complete within that request-read
+budget and the independently measured WAF/Front Door limits. Do not claim
+large-transfer readiness without measuring authenticated chunks and downloads;
+never solve an upload problem by disabling WAF inspection.
